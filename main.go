@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 
+	dockerfiles "github.com/digizyne/local-first/internal/dockerfiles"
 	prompts "github.com/digizyne/local-first/internal/prompts"
 )
 
@@ -45,21 +46,16 @@ func main() {
 			fmt.Printf("Command execution failed: %v\n", err)
 			return
 		}
-		srcDockerfile := "./dockerfiles/vue/Dockerfile"
-		srcCompose := "./dockerfiles/vue/docker-compose.yml"
-		destDir := "./" + projectName
 
-		cmdCpDockerfile := exec.Command("cp", srcDockerfile, destDir)
-		err = cmdCpDockerfile.Run()
+		err = dockerfiles.CreateDockerfile()
 		if err != nil {
-			fmt.Printf("Failed to copy Dockerfile: %v\n", err)
+			fmt.Printf("Error creating Dockerfile: %v\n", err)
 			return
 		}
 
-		cmdCpCompose := exec.Command("cp", srcCompose, destDir)
-		err = cmdCpCompose.Run()
+		err = dockerfiles.CreateDockerComposeFile()
 		if err != nil {
-			fmt.Printf("Failed to copy docker-compose.yml: %v\n", err)
+			fmt.Printf("Error creating docker-compose.yml: %v\n", err)
 			return
 		}
 	}
