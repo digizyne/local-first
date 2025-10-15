@@ -8,3 +8,6 @@ run:
 
 build:
     go build -o lf main.go
+
+tidy:
+    go mod tidy

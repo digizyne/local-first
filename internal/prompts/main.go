@@ -6,10 +6,12 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-func SelectProgrammingLanguage(items []string) (string, error) {
+func SelectProgrammingLanguage() (string, error) {
+	programmingLanguages := []string{"Javascript", "Go"}
+
 	prompt := promptui.Select{
 		Label: "Select the programming language",
-		Items: items,
+		Items: programmingLanguages,
 	}
 
 	_, result, err := prompt.Run()
@@ -21,10 +23,12 @@ func SelectProgrammingLanguage(items []string) (string, error) {
 	return result, nil
 }
 
-func SelectJsFramework(items []string) (string, error) {
+func SelectJsFramework() (string, error) {
+	frameworks := []string{"React", "Vue", "Angular"}
+
 	prompt := promptui.Select{
 		Label: "Select the Javascript framework",
-		Items: items,
+		Items: frameworks,
 	}
 
 	_, result, err := prompt.Run()
@@ -36,10 +40,12 @@ func SelectJsFramework(items []string) (string, error) {
 	return result, nil
 }
 
-func SelectGoFramework(items []string) (string, error) {
+func SelectGoFramework() (string, error) {
+	goFrameworks := []string{"Gin", "Echo", "Fiber"}
+
 	prompt := promptui.Select{
 		Label: "Select the Go framework",
-		Items: items,
+		Items: goFrameworks,
 	}
 
 	_, result, err := prompt.Run()
