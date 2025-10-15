@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	deploy "github.com/digizyne/local-first/internal/deploy"
 	scaffold "github.com/digizyne/local-first/internal/scaffold"
 	"github.com/urfave/cli/v3"
 )
@@ -19,6 +20,12 @@ func main() {
 				Aliases: []string{"s"},
 				Usage:   "Scaffold a new project",
 				Action:  scaffold.Scaffold,
+			},
+			{
+				Name:    "deploy",
+				Aliases: []string{"d"},
+				Usage:   "Deploy a project",
+				Action:  deploy.Deploy,
 			},
 		},
 	}

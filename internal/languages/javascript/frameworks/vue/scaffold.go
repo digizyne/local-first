@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
-func createDockerfile() error {
+func createDockerfile(projectName string) error {
 	const fileContent = `
 	FROM node:24-alpine AS build
 	WORKDIR /app
@@ -21,7 +22,7 @@ func createDockerfile() error {
 	CMD ["nginx", "-g", "daemon off;"]
 	`
 
-	const fileName = "Dockerfile"
+	fileName := "./" + projectName + "/Dockerfile"
 
 	err := os.WriteFile(fileName, []byte(fileContent), 0644)
 
@@ -32,7 +33,7 @@ func createDockerfile() error {
 	return nil
 }
 
-func createDockerComposeFile() error {
+func createDockerComposeFile(projectName string) error {
 	const fileContent = `services:
 	vue-app:
 	  image: node:24
@@ -41,10 +42,11 @@ func createDockerComposeFile() error {
 	  - ./:/app
 	  command: sh -c "npm install && npm run dev --host"
 	`
+	sanitizedContent := strings.ReplaceAll(fileContent, "\t", "  ")
 
-	const fileName = "docker-compose.yml"
+	fileName := "./" + projectName + "/docker-compose.yml"
 
-	err := os.WriteFile(fileName, []byte(fileContent), 0644)
+	err := os.WriteFile(fileName, []byte(sanitizedContent), 0644)
 
 	if err != nil {
 		return fmt.Errorf("Failed to write to file %s: %v", fileName, err)
@@ -60,12 +62,12 @@ func ScaffoldVueProject(projectName string) error {
 		return fmt.Errorf("Command execution failed: %v", err)
 	}
 
-	err = createDockerfile()
+	err = createDockerfile(projectName)
 	if err != nil {
 		return fmt.Errorf("Error creating Dockerfile: %v", err)
 	}
 
-	err = createDockerComposeFile()
+	err = createDockerComposeFile(projectName)
 	if err != nil {
 		return fmt.Errorf("Error creating docker-compose.yml: %v", err)
 	}

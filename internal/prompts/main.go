@@ -64,9 +64,9 @@ func validateProjectName(input string) error {
 	return nil
 }
 
-func PromptProjectName() (string, error) {
+func PromptName(label string) (string, error) {
 	prompt := promptui.Prompt{
-		Label:    "Project Name",
+		Label:    label,
 		Validate: validateProjectName,
 	}
 

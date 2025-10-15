@@ -10,7 +10,7 @@ import (
 )
 
 func Scaffold(ctx context.Context, cmd *cli.Command) error {
-	projectName, err := prompts.PromptProjectName()
+	projectName, err := prompts.PromptName("Project Name")
 	if err != nil {
 		return fmt.Errorf("failed to get project name: %w", err)
 	}
