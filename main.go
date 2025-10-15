@@ -1,24 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
+	"os"
 
-	languages "github.com/digizyne/local-first/internal/languages"
-	prompts "github.com/digizyne/local-first/internal/prompts"
+	scaffold "github.com/digizyne/local-first/internal/scaffold"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	projectName, err := prompts.PromptProjectName()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
+	cmd := &cli.Command{
+		Name:  "lf",
+		Usage: "A CLI tool to scaffold and deploy local-first projects",
+		Commands: []*cli.Command{
+			{
+				Name:    "scaffold",
+				Aliases: []string{"s"},
+				Usage:   "Scaffold a new project",
+				Action:  scaffold.Scaffold,
+			},
+		},
 	}
 
-	err = languages.SelectProgrammingLanguage(projectName)
-	if err != nil {
-		fmt.Printf("Programming language selection failed %v\n", err)
-		return
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
 	}
-
-	fmt.Println("Project scaffolding completed successfully.")
 }

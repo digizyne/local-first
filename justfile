@@ -11,3 +11,6 @@ build:
 
 tidy:
     go mod tidy
+
+add PACKAGE:
+    go get -u {{PACKAGE}}
