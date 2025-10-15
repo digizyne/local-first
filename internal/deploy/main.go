@@ -9,8 +9,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func BuildContainerImage(containerImageName string) error {
-	tag := "us-central1-docker.pkg.dev/jcastle-dev/local-first-public/" + containerImageName
+func BuildContainerImage(tag string) error {
 	cmd := exec.Command("docker", "build", "-t", tag, ".")
 	err := cmd.Run()
 	if err != nil {
@@ -20,8 +19,8 @@ func BuildContainerImage(containerImageName string) error {
 	return nil
 }
 
-func PushContainerImage(containerImageName string) error {
-	cmd := exec.Command("docker", "push", containerImageName)
+func PushContainerImage(tag string) error {
+	cmd := exec.Command("docker", "push", tag)
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("docker push failed: %v", err)
@@ -36,12 +35,14 @@ func Deploy(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to get deployment name: %w", err)
 	}
 
-	err = BuildContainerImage(deploymentName)
+	tag := "us-central1-docker.pkg.dev/jcastle-dev/local-first-public/" + deploymentName + ":latest"
+
+	err = BuildContainerImage(tag)
 	if err != nil {
 		return fmt.Errorf("failed to build container image: %v", err)
 	}
 
-	err = PushContainerImage(deploymentName)
+	err = PushContainerImage(tag)
 	if err != nil {
 		return fmt.Errorf("failed to push container image: %v", err)
 	}

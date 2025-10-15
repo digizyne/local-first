@@ -14,3 +14,6 @@ tidy:
 
 add PACKAGE:
     go get -u {{PACKAGE}}
+
+install:
+    go install -o lf github.com/digizyne/local-first
