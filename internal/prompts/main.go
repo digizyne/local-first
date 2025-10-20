@@ -17,7 +17,7 @@ func SelectProgrammingLanguage() (string, error) {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v", err)
+		return "", fmt.Errorf("prompt failed %v", err)
 	}
 
 	return result, nil
@@ -34,7 +34,7 @@ func SelectJsFramework() (string, error) {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v", err)
+		return "", fmt.Errorf("prompt failed %v", err)
 	}
 
 	return result, nil
@@ -51,7 +51,7 @@ func SelectGoFramework() (string, error) {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v", err)
+		return "", fmt.Errorf("prompt failed %v", err)
 	}
 
 	return result, nil
@@ -59,7 +59,7 @@ func SelectGoFramework() (string, error) {
 
 func validateProjectName(input string) error {
 	if len(input) < 3 {
-		return fmt.Errorf("Project name must be at least 3 characters")
+		return fmt.Errorf("project name must be at least 3 characters")
 	}
 	return nil
 }
@@ -72,7 +72,7 @@ func PromptName(label string) (string, error) {
 
 	result, err := prompt.Run()
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v", err)
+		return "", fmt.Errorf("prompt failed %v", err)
 	}
 	return result, nil
 }

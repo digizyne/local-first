@@ -1,75 +1,93 @@
 package vue
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
-	"strings"
+	"time"
+
+	"cloud.google.com/go/storage"
+	"google.golang.org/api/option"
 )
 
-func createDockerfile(projectName string) error {
-	const fileContent = `
-	FROM node:24-alpine AS build
-	WORKDIR /app
-	COPY package*.json ./
-	RUN npm install
-	COPY . .
-	RUN npm run build
-	
-	FROM nginx:alpine AS production
-	COPY --from=build /app/dist /usr/share/nginx/html
-	EXPOSE 80
-	CMD ["nginx", "-g", "daemon off;"]
-	`
-
-	fileName := "./" + projectName + "/Dockerfile"
-
-	err := os.WriteFile(fileName, []byte(fileContent), 0644)
-
-	if err != nil {
-		return fmt.Errorf("Failed to write to file %s: %v", fileName, err)
+func createFiles(projectName string) error {
+	files := []map[string]string{
+		{
+			"destination": "./" + projectName + "/Dockerfile",
+			"source":      "Dockerfile-vue",
+		},
+		{
+			"destination": "./" + projectName + "/docker-compose.yml",
+			"source":      "docker-compose-vue.yml",
+		},
+		{
+			"destination": "./" + projectName + "/.dockerignore",
+			"source":      "dockerignore-vue",
+		},
+		{
+			"destination": "./" + projectName + "/nginx.conf",
+			"source":      "nginx-vue.conf",
+		},
 	}
+
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx, option.WithoutAuthentication())
+	if err != nil {
+		return fmt.Errorf("storage.NewClient: %w", err)
+	}
+	defer client.Close()
+	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
+	defer cancel()
+
+	var success bool
+	defer func() {
+		if !success && err != nil {
+			if cleanupErr := os.RemoveAll("./" + projectName); cleanupErr != nil {
+				err = fmt.Errorf("%v; additionally failed to remove directory %s: %v", err, projectName, cleanupErr)
+			}
+		}
+	}()
+
+	for _, f := range files {
+		rc, err := client.Bucket("lf-public-scaffold-artifacts").Object(f["source"]).NewReader(ctx)
+		if err != nil {
+			return fmt.Errorf("Object(%q).NewReader: %w", f["source"], err)
+		}
+		defer rc.Close()
+
+		localFile, err := os.Create(f["destination"])
+		if err != nil {
+			return fmt.Errorf("os.Create(%q): %w", localFile.Name(), err)
+		}
+		defer func() {
+			if closeErr := localFile.Close(); closeErr != nil && err == nil {
+				err = fmt.Errorf("localFile.Close: %w", closeErr)
+			}
+		}()
+
+		_, err = io.Copy(localFile, rc)
+		if err != nil {
+			return fmt.Errorf("io.Copy failed: %w", err)
+		}
+	}
+
+	success = true
 
 	return nil
 }
 
-func createDockerComposeFile(projectName string) error {
-	const fileContent = `services:
-	vue-app:
-	  image: node:24
-	  working_dir: /app
-	  volumes:
-	  - ./:/app
-	  command: sh -c "npm install && npm run dev --host"
-	`
-	sanitizedContent := strings.ReplaceAll(fileContent, "\t", "  ")
-
-	fileName := "./" + projectName + "/docker-compose.yml"
-
-	err := os.WriteFile(fileName, []byte(sanitizedContent), 0644)
-
-	if err != nil {
-		return fmt.Errorf("Failed to write to file %s: %v", fileName, err)
-	}
-
-	return nil
-}
-
-func ScaffoldVueProject(projectName string) error {
+func ScaffoldVueProject(projectName string) (err error) {
+	// Create the Vue project first
 	cmd := exec.Command("npm", "create", "vue@latest", "--", "--default", projectName)
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("Command execution failed: %v", err)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("command execution failed: %v", err)
 	}
 
-	err = createDockerfile(projectName)
-	if err != nil {
-		return fmt.Errorf("Error creating Dockerfile: %v", err)
-	}
-
-	err = createDockerComposeFile(projectName)
-	if err != nil {
-		return fmt.Errorf("Error creating docker-compose.yml: %v", err)
+	// Create additional files
+	if err := createFiles(projectName); err != nil {
+		return fmt.Errorf("error creating additional files: %v", err)
 	}
 
 	return nil

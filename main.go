@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	deploy "github.com/digizyne/local-first/internal/deploy"
-	scaffold "github.com/digizyne/local-first/internal/scaffold"
+	deploy "github.com/digizyne/lf/internal/deploy"
+	scaffold "github.com/digizyne/lf/internal/scaffold"
 	"github.com/urfave/cli/v3"
 )
 

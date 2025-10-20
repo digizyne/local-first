@@ -3,8 +3,8 @@ package javascript
 import (
 	"fmt"
 
-	vueScaffold "github.com/digizyne/local-first/internal/languages/javascript/frameworks/vue"
-	prompts "github.com/digizyne/local-first/internal/prompts"
+	vueScaffold "github.com/digizyne/lf/internal/languages/javascript/frameworks/vue"
+	prompts "github.com/digizyne/lf/internal/prompts"
 )
 
 func SelectJavascriptFramework(projectName string) error {
@@ -12,14 +12,14 @@ func SelectJavascriptFramework(projectName string) error {
 
 	selectedFramework, err := prompts.SelectJsFramework()
 	if err != nil {
-		return fmt.Errorf("Prompt failed %v", err)
+		return fmt.Errorf("prompt failed %v", err)
 	}
 
 	switch selectedFramework {
 	case "Vue":
 		err = vueScaffold.ScaffoldVueProject(projectName)
 		if err != nil {
-			return fmt.Errorf("Vue project scaffolding failed: %v", err)
+			return fmt.Errorf("vue project scaffolding failed: %v", err)
 		}
 	}
 

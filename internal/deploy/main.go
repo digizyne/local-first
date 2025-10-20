@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	prompts "github.com/digizyne/local-first/internal/prompts"
+	prompts "github.com/digizyne/lf/internal/prompts"
 	"github.com/urfave/cli/v3"
 )
 
