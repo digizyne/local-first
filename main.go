@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
-	deploy "github.com/digizyne/lf/internal/deploy"
-	scaffold "github.com/digizyne/lf/internal/scaffold"
+	"github.com/digizyne/lf/internal/auth"
+	"github.com/digizyne/lf/internal/deploy"
+	"github.com/digizyne/lf/internal/scaffold"
 	"github.com/urfave/cli/v3"
 )
 
@@ -26,6 +27,12 @@ func main() {
 				Aliases: []string{"d"},
 				Usage:   "Deploy a project",
 				Action:  deploy.Deploy,
+			},
+			{
+				Name:    "login",
+				Aliases: []string{"l"},
+				Usage:   "Login to lf-cloud",
+				Action:  auth.Login,
 			},
 		},
 	}

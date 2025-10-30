@@ -1,6 +1,7 @@
 package selects
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/manifoldco/promptui"
@@ -68,6 +69,47 @@ func PromptName(label string) (string, error) {
 	prompt := promptui.Prompt{
 		Label:    label,
 		Validate: validateProjectName,
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		return "", fmt.Errorf("prompt failed %v", err)
+	}
+	return result, nil
+}
+
+func PromptUsername(label string) (string, error) {
+	validate := func(input string) error {
+		if len(input) < 10 {
+			return errors.New("Username must be at least 10 characters")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    label,
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		return "", fmt.Errorf("prompt failed %v", err)
+	}
+	return result, nil
+}
+
+func PromptPassword(label string) (string, error) {
+	validate := func(input string) error {
+		if len(input) < 16 {
+			return errors.New("Password must be at least 16 characters")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    label,
+		Mask:     '*',
+		Validate: validate,
 	}
 
 	result, err := prompt.Run()

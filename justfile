@@ -1,4 +1,4 @@
-default: fmt run
+default: install
 
 fmt:
     go fmt ./...
