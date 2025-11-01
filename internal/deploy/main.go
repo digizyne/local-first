@@ -1,21 +1,31 @@
 package deploy
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/digizyne/lf/internal/auth"
 	prompts "github.com/digizyne/lf/internal/prompts"
 	"github.com/urfave/cli/v3"
 )
 
-type LoginResponse struct {
-	Token string `json:"token"`
+type TransmitImageResponse struct {
+	Fqin string `json:"fqin"`
+}
+
+type CreateDeploymentRequestBody struct {
+	Name           string `json:"name"`
+	ContainerImage string `json:"container_image"`
+	Tier           string `json:"tier"`
+}
+
+type CreateDeploymentResponseBody struct {
+	ServiceUrl string `json:"service_url"`
 }
 
 func buildContainerImage(tag string) error {
@@ -38,16 +48,16 @@ func saveContainerImage(tag string, filename string) error {
 	return nil
 }
 
-func transmitCompressedImage(filename string, token string) error {
+func transmitCompressedImage(filename string, token string) (fqin string, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer file.Close()
 
 	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/container-registry", file)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %v", err)
+		return "", fmt.Errorf("failed to create request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/gzip")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -55,49 +65,74 @@ func transmitCompressedImage(filename string, token string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	if (resp.StatusCode == http.StatusUnauthorized) || (resp.StatusCode == http.StatusForbidden) {
-		return fmt.Errorf("authentication failed: please log in again (lf login)")
+		return "", fmt.Errorf("authentication failed: please log in again (lf login)")
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code %v", resp.Status)
+		return "", fmt.Errorf("status code %v", resp.Status)
 	}
 
-	return nil
+	var respBody TransmitImageResponse
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode response body: %v", err)
+	}
+
+	return respBody.Fqin, nil
+}
+func createDeployment(deploymentName string, fqin string, token string) (serviceUrl string, err error) {
+	body := CreateDeploymentRequestBody{
+		Name:           deploymentName,
+		ContainerImage: fqin,
+		Tier:           "free",
+	}
+
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/deployments", bytes.NewReader(bodyBytes))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if (resp.StatusCode == http.StatusUnauthorized) || (resp.StatusCode == http.StatusForbidden) {
+		return "", fmt.Errorf("authentication failed: please log in again with 'lf login'")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("status code %v", resp.Status)
+	}
+
+	var respBody CreateDeploymentResponseBody
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode response body: %v", err)
+	}
+
+	return respBody.ServiceUrl, nil
 }
 
 func Deploy(ctx context.Context, cmd *cli.Command) error {
-	homeDir, err := os.UserHomeDir()
+	token, err := auth.GetBearerToken()
 	if err != nil {
-		return fmt.Errorf("failed to get user home directory: %w", err)
+		return err
 	}
-	credentialsFile := filepath.Join(homeDir, ".config", "lf", "credentials.json")
-	if _, err := os.Stat(credentialsFile); os.IsNotExist(err) {
-		fmt.Println("No credentials found. Please log in first.")
-		err = auth.Login(ctx, cmd)
-		if err != nil {
-			return fmt.Errorf("login failed: %w", err)
-		}
-		if _, err := os.Stat(credentialsFile); os.IsNotExist(err) {
-			return fmt.Errorf("credentials file still not found after login")
-		}
-	}
-	credentialsData, err := os.ReadFile(credentialsFile)
-	if err != nil {
-		return fmt.Errorf("failed to read credentials file: %w", err)
-	}
-
-	var loginResp LoginResponse
-	err = json.Unmarshal(credentialsData, &loginResp)
-	if err != nil {
-		return fmt.Errorf("failed to parse credentials: %w", err)
-	}
-
-	fmt.Printf("Using authentication token: %s...\n", loginResp.Token[:min(8, len(loginResp.Token))])
 
 	deploymentName, err := prompts.PromptName("Deployment Name")
 	if err != nil {
@@ -115,12 +150,17 @@ func Deploy(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to save container image: %v", err)
 	}
 
-	err = transmitCompressedImage(filename, loginResp.Token)
+	fqin, err := transmitCompressedImage(filename, token)
 	if err != nil {
 		return fmt.Errorf("failed to transmit compressed image: %v", err)
 	}
 
-	fmt.Println("Deployment successful!")
+	serviceUrl, err := createDeployment(deploymentName, fqin, token)
+	if err != nil {
+		return fmt.Errorf("failed to create deployment: %v", err)
+	}
+
+	fmt.Println("Deployment successful! Your service is available at: ", serviceUrl)
 
 	return nil
 }

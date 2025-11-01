@@ -81,3 +81,24 @@ func Login(ctx context.Context, cmd *cli.Command) error {
 
 	return nil
 }
+
+func GetBearerToken() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	credentialsFile := filepath.Join(homeDir, ".config", "lf", "credentials.json")
+	if _, err := os.Stat(credentialsFile); os.IsNotExist(err) {
+		return "", fmt.Errorf("credentials not found, run 'lf login' to reauthenticate")
+	}
+	credentialsData, err := os.ReadFile(credentialsFile)
+	if err != nil {
+		return "", err
+	}
+	var loginResp LoginResponse
+	err = json.Unmarshal(credentialsData, &loginResp)
+	if err != nil {
+		return "", err
+	}
+	return loginResp.Token, nil
+}
