@@ -11,6 +11,7 @@ import (
 
 	"github.com/digizyne/lf/internal/auth"
 	prompts "github.com/digizyne/lf/internal/prompts"
+	"github.com/digizyne/lf/internal/ui"
 	"github.com/urfave/cli/v3"
 )
 
@@ -97,7 +98,7 @@ func createDeployment(deploymentName string, fqin string, token string) (service
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/deployments", bytes.NewReader(bodyBytes))
+	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/deploy", bytes.NewReader(bodyBytes))
 	if err != nil {
 		return "", err
 	}
@@ -140,22 +141,38 @@ func Deploy(ctx context.Context, cmd *cli.Command) error {
 	}
 	filename := fmt.Sprintf("%s.tgz", deploymentName)
 
-	err = buildContainerImage(deploymentName)
+	// Build container image with spinner
+	err = ui.ShowSpinner("Building container image...", func() error {
+		return buildContainerImage(deploymentName)
+	})
 	if err != nil {
 		return fmt.Errorf("failed to build container image: %v", err)
 	}
+	fmt.Println("✓ Container image built successfully")
 
+	// Save container image with progress indicator
+	stopProgress := ui.ShowProgress("Saving and compressing container image...")
 	err = saveContainerImage(deploymentName, filename)
+	stopProgress()
 	if err != nil {
 		return fmt.Errorf("failed to save container image: %v", err)
 	}
 
+	// Transmit image with progress indicator
+	stopProgress = ui.ShowProgress("Uploading container image...")
 	fqin, err := transmitCompressedImage(filename, token)
+	stopProgress()
 	if err != nil {
 		return fmt.Errorf("failed to transmit compressed image: %v", err)
 	}
 
-	serviceUrl, err := createDeployment(deploymentName, fqin, token)
+	// Create deployment with spinner
+	var serviceUrl string
+	err = ui.ShowSpinner("Creating deployment...", func() error {
+		var createErr error
+		serviceUrl, createErr = createDeployment(deploymentName, fqin, token)
+		return createErr
+	})
 	if err != nil {
 		return fmt.Errorf("failed to create deployment: %v", err)
 	}
