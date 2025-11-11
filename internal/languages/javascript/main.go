@@ -3,8 +3,8 @@ package javascript
 import (
 	"fmt"
 
-	vueScaffold "github.com/digizyne/lf/internal/languages/javascript/frameworks/vue"
-	prompts "github.com/digizyne/lf/internal/prompts"
+	vueScaffold "github.com/0p5dev/ops/internal/languages/javascript/frameworks/vue"
+	prompts "github.com/0p5dev/ops/internal/prompts"
 )
 
 func SelectJavascriptFramework(projectName string) error {

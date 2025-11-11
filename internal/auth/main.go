@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	prompts "github.com/digizyne/lf/internal/prompts"
+	prompts "github.com/0p5dev/ops/internal/prompts"
 	"github.com/urfave/cli/v3"
 )
 
@@ -24,12 +24,12 @@ type LoginResponse struct {
 }
 
 func Login(ctx context.Context, cmd *cli.Command) error {
-	username, err := prompts.PromptUsername("Enter your lf-cloud username:")
+	username, err := prompts.PromptUsername("Enter your 0p5.dev username:")
 	if err != nil {
 		return err
 	}
 
-	password, err := prompts.PromptPassword("Enter your lf-cloud password:")
+	password, err := prompts.PromptPassword("Enter your 0p5.dev password:")
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func Login(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return err
 	}
-	configDir := filepath.Join(homeDir, ".config", "lf")
+	configDir := filepath.Join(homeDir, ".config", "ops")
 	err = os.MkdirAll(configDir, 0755)
 	if err != nil {
 		return err
@@ -87,9 +87,9 @@ func GetBearerToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	credentialsFile := filepath.Join(homeDir, ".config", "lf", "credentials.json")
+	credentialsFile := filepath.Join(homeDir, ".config", "ops", "credentials.json")
 	if _, err := os.Stat(credentialsFile); os.IsNotExist(err) {
-		return "", fmt.Errorf("credentials not found, run 'lf login' to reauthenticate")
+		return "", fmt.Errorf("credentials not found, run 'ops login' to reauthenticate")
 	}
 	credentialsData, err := os.ReadFile(credentialsFile)
 	if err != nil {

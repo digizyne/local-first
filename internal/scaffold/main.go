@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	languages "github.com/digizyne/lf/internal/languages"
-	prompts "github.com/digizyne/lf/internal/prompts"
+	languages "github.com/0p5dev/ops/internal/languages"
+	prompts "github.com/0p5dev/ops/internal/prompts"
 	"github.com/urfave/cli/v3"
 )
 

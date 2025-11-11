@@ -7,7 +7,7 @@ run:
     go run main.go
 
 build:
-    go build -o lf main.go
+    go build -o ops main.go
 
 tidy:
     go mod tidy

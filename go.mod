@@ -1,4 +1,4 @@
-module github.com/digizyne/lf
+module github.com/0p5dev/ops
 
 go 1.25.0
 

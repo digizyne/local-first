@@ -5,16 +5,16 @@ import (
 	"log"
 	"os"
 
-	"github.com/digizyne/lf/internal/auth"
-	"github.com/digizyne/lf/internal/deploy"
-	"github.com/digizyne/lf/internal/scaffold"
+	"github.com/0p5dev/ops/internal/auth"
+	"github.com/0p5dev/ops/internal/deploy"
+	"github.com/0p5dev/ops/internal/scaffold"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
 	cmd := &cli.Command{
-		Name:  "lf",
-		Usage: "A CLI tool to scaffold and deploy local-first projects",
+		Name:  "ops",
+		Usage: "A CLI tool to scaffold and deploy developer-first applications",
 		Commands: []*cli.Command{
 			{
 				Name:    "scaffold",
@@ -31,7 +31,7 @@ func main() {
 			{
 				Name:    "login",
 				Aliases: []string{"l"},
-				Usage:   "Login to lf-cloud",
+				Usage:   "Login to 0p5.dev",
 				Action:  auth.Login,
 			},
 		},

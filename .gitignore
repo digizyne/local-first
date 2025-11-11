@@ -5,7 +5,7 @@
 *.dylib
 *.test
 *.out
-lf
+ops
 
 # Go workspace file
 go.work

@@ -9,9 +9,9 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/digizyne/lf/internal/auth"
-	prompts "github.com/digizyne/lf/internal/prompts"
-	"github.com/digizyne/lf/internal/ui"
+	"github.com/0p5dev/ops/internal/auth"
+	prompts "github.com/0p5dev/ops/internal/prompts"
+	"github.com/0p5dev/ops/internal/ui"
 	"github.com/urfave/cli/v3"
 )
 
@@ -71,7 +71,7 @@ func transmitCompressedImage(filename string, token string) (fqin string, err er
 	defer resp.Body.Close()
 
 	if (resp.StatusCode == http.StatusUnauthorized) || (resp.StatusCode == http.StatusForbidden) {
-		return "", fmt.Errorf("authentication failed: please log in again (lf login)")
+		return "", fmt.Errorf("authentication failed: please log in again (ops login)")
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -113,7 +113,7 @@ func createDeployment(deploymentName string, fqin string, token string) (service
 	defer resp.Body.Close()
 
 	if (resp.StatusCode == http.StatusUnauthorized) || (resp.StatusCode == http.StatusForbidden) {
-		return "", fmt.Errorf("authentication failed: please log in again with 'lf login'")
+		return "", fmt.Errorf("authentication failed: please log in again with 'ops login'")
 	}
 
 	if resp.StatusCode != http.StatusOK {

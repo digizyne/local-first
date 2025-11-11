@@ -3,8 +3,8 @@ package languages
 import (
 	"fmt"
 
-	jsLanguage "github.com/digizyne/lf/internal/languages/javascript"
-	prompts "github.com/digizyne/lf/internal/prompts"
+	jsLanguage "github.com/0p5dev/ops/internal/languages/javascript"
+	prompts "github.com/0p5dev/ops/internal/prompts"
 )
 
 func SelectProgrammingLanguage(projectName string) error {
