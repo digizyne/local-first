@@ -56,7 +56,7 @@ func transmitCompressedImage(filename string, token string) (fqin string, err er
 	}
 	defer file.Close()
 
-	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/container-registry", file)
+	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/container-images", file)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %v", err)
 	}
@@ -98,7 +98,7 @@ func createDeployment(deploymentName string, fqin string, token string) (service
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/deploy", bytes.NewReader(bodyBytes))
+	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/deployments", bytes.NewReader(bodyBytes))
 	if err != nil {
 		return "", err
 	}
