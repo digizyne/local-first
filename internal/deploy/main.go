@@ -49,14 +49,14 @@ func saveContainerImage(tag string, filename string) error {
 	return nil
 }
 
-func transmitCompressedImage(filename string, token string) (fqin string, err error) {
+func transmitCompressedImage(filename string, token string, controllerBaseUrl string) (fqin string, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 
-	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/container-images", file)
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v1/container-images", controllerBaseUrl), file)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %v", err)
 	}
@@ -86,7 +86,7 @@ func transmitCompressedImage(filename string, token string) (fqin string, err er
 
 	return respBody.Fqin, nil
 }
-func createDeployment(deploymentName string, fqin string, token string) (serviceUrl string, err error) {
+func createDeployment(deploymentName string, fqin string, token string, controllerBaseUrl string) (serviceUrl string, err error) {
 	body := CreateDeploymentRequestBody{
 		Name:           deploymentName,
 		ContainerImage: fqin,
@@ -98,7 +98,7 @@ func createDeployment(deploymentName string, fqin string, token string) (service
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost:8080/api/v1/deployments", bytes.NewReader(bodyBytes))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v1/deployments", controllerBaseUrl), bytes.NewReader(bodyBytes))
 	if err != nil {
 		return "", err
 	}
@@ -130,6 +130,8 @@ func createDeployment(deploymentName string, fqin string, token string) (service
 }
 
 func Deploy(ctx context.Context, cmd *cli.Command) error {
+	controllerBaseUrl := cmd.Metadata["controllerBaseUrl"].(string)
+
 	token, err := auth.GetBearerToken()
 	if err != nil {
 		return err
@@ -160,7 +162,7 @@ func Deploy(ctx context.Context, cmd *cli.Command) error {
 
 	// Transmit image with progress indicator
 	stopProgress = ui.ShowProgress("Uploading container image...")
-	fqin, err := transmitCompressedImage(filename, token)
+	fqin, err := transmitCompressedImage(filename, token, controllerBaseUrl)
 	stopProgress()
 	if err != nil {
 		return fmt.Errorf("failed to transmit compressed image: %v", err)
@@ -170,7 +172,7 @@ func Deploy(ctx context.Context, cmd *cli.Command) error {
 	var serviceUrl string
 	err = ui.ShowSpinner("Creating deployment...", func() error {
 		var createErr error
-		serviceUrl, createErr = createDeployment(deploymentName, fqin, token)
+		serviceUrl, createErr = createDeployment(deploymentName, fqin, token, controllerBaseUrl)
 		return createErr
 	})
 	if err != nil {

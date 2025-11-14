@@ -24,6 +24,9 @@ type LoginResponse struct {
 }
 
 func Login(ctx context.Context, cmd *cli.Command) error {
+	controllerBaseUrl := cmd.Metadata["controllerBaseUrl"].(string)
+	// println("Controller Base URL:", controllerBaseUrl)
+
 	username, err := prompts.PromptUsername("Enter your 0p5.dev username:")
 	if err != nil {
 		return err
@@ -42,7 +45,7 @@ func Login(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return err
 	}
-	resp, err := http.Post("http://localhost:8080/api/v1/auth/login", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(fmt.Sprintf("%s/api/v1/auth/login", controllerBaseUrl), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}

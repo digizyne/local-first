@@ -8,7 +8,8 @@ import (
 )
 
 func SelectProgrammingLanguage() (string, error) {
-	programmingLanguages := []string{"Javascript", "Go"}
+	// programmingLanguages := []string{"Javascript", "Go"}
+	programmingLanguages := []string{"Javascript"}
 
 	prompt := promptui.Select{
 		Label: "Select the programming language",
@@ -25,7 +26,8 @@ func SelectProgrammingLanguage() (string, error) {
 }
 
 func SelectJsFramework() (string, error) {
-	frameworks := []string{"React", "Vue", "Angular"}
+	// frameworks := []string{"React", "Vue", "Angular"}
+	frameworks := []string{"Vue"}
 
 	prompt := promptui.Select{
 		Label: "Select the Javascript framework",
